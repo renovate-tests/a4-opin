@@ -18,6 +18,9 @@ from euth.projects import models as prj_models
 
 
 # Snippets
+from euth_wagtail.settings import LANGUAGES
+
+
 class RSSImport(models.Model):
     url = models.URLField(null=True, blank=True)
 
@@ -291,24 +294,69 @@ class ImageTextBlockList(core_blocks.StructBlock):
         label = 'Image Text Block'
 
 
-# Pages
-class HomePage(Page):
+def get_abstract_translated_page(block_types=None):
+    block_types_set = block_types or [
+        ('image', image_blocks.ImageChooserBlock(icon="image")),
+        ('info_block', InfoBlock()),
+        ('video_block', VideoBlock()),
+        ('news_block', NewsBlock()),
+        ('rss_feed', RSSImportBlock()),
+        ('column_block', ColumnBlock()),
+    ]
 
-    # Title
-    title_en = models.CharField(
-        max_length=255, blank=True, verbose_name="Header Title")
-    title_de = models.CharField(
-        max_length=255, blank=True, verbose_name="Header Title")
-    title_it = models.CharField(
-        max_length=255, blank=True, verbose_name="Header Title")
-    title_fr = models.CharField(
-        max_length=255, blank=True, verbose_name="Header Title")
-    title_sv = models.CharField(
-        max_length=255, blank=True, verbose_name="Header Title")
-    title_sl = models.CharField(
-        max_length=255, blank=True, verbose_name="Header Title")
-    title_da = models.CharField(
-        max_length=255, blank=True, verbose_name="Header Title")
+    class AbstractTranslatedPage(Page):
+        class Meta:
+            abstract = True
+
+        def __init__(self):
+            # Title
+            self.translated_title = TranslatedField('title')
+            for lang_code, lang in LANGUAGES:
+                setattr(self,
+                        'title_{}'.format(lang_code),
+                        models.CharField(
+                            max_length=255,
+                            blank=True,
+                            verbose_name="Header Title"
+                        ))
+            # Body
+            self.body = TranslatedField('body')
+            for lang_code, lang in LANGUAGES:
+                setattr(self,
+                        'body_{}'.format(lang_code),
+                        StreamField(
+                            block_types_set,
+                            null=True,
+                            blank=True
+                        ))
+
+        general_panels = [
+            edit_handlers.FieldPanel('title', classname='title'),
+            edit_handlers.FieldPanel('slug'),
+        ]
+
+        content_panels = [
+            edit_handlers.MultiFieldPanel(
+                [
+                    edit_handlers.FieldPanel('title_' + lang_code),
+                    edit_handlers.StreamFieldPanel('body_' + lang_code)
+                ],
+                heading=lang,
+                classname="collapsible collapsed"
+            ) for lang_code, lang in LANGUAGES
+        ]
+
+        edit_handler = edit_handlers.TabbedInterface([
+            edit_handlers.ObjectList(content_panels, heading='Content'),
+            edit_handlers.ObjectList(general_panels, heading='General')
+        ])
+    return AbstractTranslatedPage
+
+
+# Pages
+class HomePage:
+    class Meta:
+        verbose_name = "Homepage"
 
     image = models.ForeignKey(
         'wagtailimages.Image',
@@ -322,102 +370,12 @@ class HomePage(Page):
 
     videoplayer_url = models.URLField()
 
-    # Body
-    block_types = [
-        ('image', image_blocks.ImageChooserBlock(icon="image")),
-        ('info_block', InfoBlock()),
-        ('video_block', VideoBlock()),
-        ('news_block', NewsBlock()),
-        ('rss_feed', RSSImportBlock()),
-        ('column_block', ColumnBlock()),
-    ]
-    body_en = StreamField(block_types, null=True)
-    body_de = StreamField(block_types, null=True, blank=True)
-    body_it = StreamField(block_types, null=True, blank=True)
-    body_fr = StreamField(block_types, null=True, blank=True)
-    body_sv = StreamField(block_types, null=True, blank=True)
-    body_sl = StreamField(block_types, null=True, blank=True)
-    body_da = StreamField(block_types, null=True, blank=True)
-
-    body = TranslatedField('body')
-
-    translated_title = TranslatedField('title')
-
-    class Meta:
-        verbose_name = "Homepage"
-
     general_panels = [
         edit_handlers.FieldPanel('title', classname='title'),
         edit_handlers.FieldPanel('slug'),
         ImageChooserPanel('image'),
         edit_handlers.FieldPanel('videoplayer_url'),
     ]
-
-    content_panels = [
-
-        edit_handlers.MultiFieldPanel(
-            [
-                edit_handlers.FieldPanel('title_en'),
-                edit_handlers.StreamFieldPanel('body_en')
-            ],
-            heading="English",
-            classname="collapsible collapsed"
-        ),
-        edit_handlers.MultiFieldPanel(
-            [
-                edit_handlers.FieldPanel('title_de'),
-                edit_handlers.StreamFieldPanel('body_de')
-            ],
-            heading="German",
-            classname="collapsible collapsed"
-        ),
-        edit_handlers.MultiFieldPanel(
-            [
-                edit_handlers.FieldPanel('title_it'),
-                edit_handlers.StreamFieldPanel('body_it')
-            ],
-            heading="Italien",
-            classname="collapsible collapsed"
-        ),
-        edit_handlers.MultiFieldPanel(
-            [
-                edit_handlers.FieldPanel('title_fr'),
-                edit_handlers.StreamFieldPanel('body_fr')
-            ],
-            heading="French",
-            classname="collapsible collapsed"
-        ),
-        edit_handlers.MultiFieldPanel(
-            [
-                edit_handlers.FieldPanel('title_sv'),
-                edit_handlers.StreamFieldPanel('body_sv')
-            ],
-            heading="Swedish",
-            classname="collapsible collapsed"
-        ),
-        edit_handlers.MultiFieldPanel(
-            [
-                edit_handlers.FieldPanel('title_sl'),
-                edit_handlers.StreamFieldPanel('body_sl')
-            ],
-            heading="Slovene",
-            classname="collapsible collapsed"
-        ),
-        edit_handlers.MultiFieldPanel(
-            [
-                edit_handlers.FieldPanel('title_da'),
-                edit_handlers.StreamFieldPanel('body_da')
-            ],
-            heading="Danish",
-            classname="collapsible collapsed"
-        )
-
-    ]
-
-    edit_handler = edit_handlers.TabbedInterface([
-        edit_handlers.ObjectList(content_panels, heading='Content'),
-        edit_handlers.ObjectList(general_panels, heading='General')
-    ])
 
     parent_page_types = []
     subpage_types = [
@@ -429,24 +387,8 @@ class HomePage(Page):
         return prj_models.Project.objects.featured()
 
 
-class SimplePage(Page):
-
-    # Title
-    title_en = models.CharField(
-        max_length=255, blank=True, verbose_name="Title")
-    title_de = models.CharField(
-        max_length=255, blank=True, verbose_name="Title")
-    title_it = models.CharField(
-        max_length=255, blank=True, verbose_name="Title")
-    title_fr = models.CharField(
-        max_length=255, blank=True, verbose_name="Title")
-    title_sv = models.CharField(
-        max_length=255, blank=True, verbose_name="Title")
-    title_sl = models.CharField(
-        max_length=255, blank=True, verbose_name="Title")
-    title_da = models.CharField(
-        max_length=255, blank=True, verbose_name="Title")
-
+class SimplePage:
+    translated_intro = TranslatedField('intro')
     intro_en = models.CharField(
         max_length=255, blank=True, verbose_name="Subtitle")
     intro_de = models.CharField(
@@ -486,27 +428,6 @@ class SimplePage(Page):
         ('rss_feed', RSSImportBlock()),
     ]
 
-    body_en = StreamField(block_types, null=True,
-                          blank=True, verbose_name="body")
-    body_de = StreamField(block_types, null=True,
-                          blank=True, verbose_name="body")
-    body_it = StreamField(block_types, null=True,
-                          blank=True, verbose_name="body")
-    body_fr = StreamField(block_types, null=True,
-                          blank=True, verbose_name="body")
-    body_sv = StreamField(block_types, null=True,
-                          blank=True, verbose_name="body")
-    body_sl = StreamField(block_types, null=True,
-                          blank=True, verbose_name="body")
-    body_da = StreamField(block_types, null=True,
-                          blank=True, verbose_name="body")
-
-    translated_title = TranslatedField('title')
-
-    translated_intro = TranslatedField('intro')
-
-    body = TranslatedField('body')
-
     general_panels = [
         edit_handlers.FieldPanel('title', classname='title'),
         edit_handlers.FieldPanel('slug'),
@@ -516,71 +437,20 @@ class SimplePage(Page):
     content_panels = [
         edit_handlers.MultiFieldPanel(
             [
-                edit_handlers.FieldPanel('title_en'),
-                edit_handlers.FieldPanel('intro_en'),
-                edit_handlers.StreamFieldPanel('body_en')
+                edit_handlers.FieldPanel('title_' + lang_code),
+                edit_handlers.FieldPanel('intro_' + lang_code),
+                edit_handlers.StreamFieldPanel('body_' + lang_code)
             ],
-            heading="English",
+            heading=lang,
             classname="collapsible collapsed"
-        ),
-        edit_handlers.MultiFieldPanel(
-            [
-                edit_handlers.FieldPanel('title_de'),
-                edit_handlers.FieldPanel('intro_de'),
-                edit_handlers.StreamFieldPanel('body_de')
-            ],
-            heading="German",
-            classname="collapsible collapsed"
-        ),
-        edit_handlers.MultiFieldPanel(
-            [
-                edit_handlers.FieldPanel('title_it'),
-                edit_handlers.FieldPanel('intro_it'),
-                edit_handlers.StreamFieldPanel('body_it')
-            ],
-            heading="Italien",
-            classname="collapsible collapsed"
-        ),
-        edit_handlers.MultiFieldPanel(
-            [
-                edit_handlers.FieldPanel('title_fr'),
-                edit_handlers.FieldPanel('intro_fr'),
-                edit_handlers.StreamFieldPanel('body_fr')
-            ],
-            heading="French",
-            classname="collapsible collapsed"
-        ),
-        edit_handlers.MultiFieldPanel(
-            [
-                edit_handlers.FieldPanel('title_sv'),
-                edit_handlers.FieldPanel('intro_sv'),
-                edit_handlers.StreamFieldPanel('body_sv')
-            ],
-            heading="Swedish",
-            classname="collapsible collapsed"
-        ),
-        edit_handlers.MultiFieldPanel(
-            [
-                edit_handlers.FieldPanel('title_sl'),
-                edit_handlers.FieldPanel('intro_sl'),
-                edit_handlers.StreamFieldPanel('body_sl')
-            ],
-            heading="Slovene",
-            classname="collapsible collapsed"
-        ),
-        edit_handlers.MultiFieldPanel(
-            [
-                edit_handlers.FieldPanel('title_da'),
-                edit_handlers.FieldPanel('intro_da'),
-                edit_handlers.StreamFieldPanel('body_da')
-            ],
-            heading="Danish",
-            classname="collapsible collapsed"
-        )
-
+        ) for lang_code, lang in LANGUAGES
     ]
 
-    edit_handler = edit_handlers.TabbedInterface([
-        edit_handlers.ObjectList(content_panels, heading='Content'),
-        edit_handlers.ObjectList(general_panels, heading='General')
-    ])
+
+class ManualOverviewPage:
+    block_types = [
+        ('ingredients_list', core_blocks.ListBlock(core_blocks.StructBlock([
+            ('ingredient', core_blocks.CharBlock(required=True)),
+            ('amount', core_blocks.CharBlock()),
+        ])))
+    ]
