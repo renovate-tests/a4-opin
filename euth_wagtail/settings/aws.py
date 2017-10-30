@@ -18,3 +18,5 @@ ALLOWED_HOSTS = [
     'dev-env.igharuux97.eu-central-1.elasticbeanstalk.com',
     'localhost',
 ]
+
+SECRET_KEY = environ['DJANGO_SECRET_KEY']
