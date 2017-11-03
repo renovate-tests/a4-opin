@@ -16,7 +16,7 @@ RUN bin/python3 -m pip install gunicorn
 WORKDIR /var/env/app
 ADD . /var/env/app
 RUN npm build
-RUN bin/python3 ./manage.py collectstatic --noinput
+RUN ../bin/python3 ./manage.py collectstatic --noinput
 
 EXPOSE 6000
 ENTRYPOINT /var/app/bin/gunicorn \
