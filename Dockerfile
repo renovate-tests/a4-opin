@@ -6,7 +6,7 @@ WORKDIR /var/env
 
 # install dependencies
 ADD ./package.json /var/env
-RUN npm install
+RUN npm install --production
 ADD ./requirements /var/env/requirements
 RUN python3 -m venv .
 RUN bin/python3 -m pip install -r ./requirements/aws.txt
