@@ -19,7 +19,8 @@ RUN npm build
 RUN ${appdir}/bin/python3 ./manage.py collectstatic --noinput
 
 EXPOSE 6000
-ENTRYPOINT ${appdir}/bin/gunicorn \
+ENTRYPOINT ${appdir}/bin/python ./manage.py migrate && \
+           ${appdir}/bin/gunicorn \
                --env DJANGO_SETTINGS_MODULE=euth_wagtail.settings.aws \
                --forwarded-allow-ips=* \
                --bind=0.0.0.0:6000 \
