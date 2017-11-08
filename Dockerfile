@@ -15,14 +15,14 @@ RUN bin/python3 -m pip install gunicorn
 
 # install our code
 ADD . ${appdir}
-RUN npm build
+RUN npm run build
 RUN ${appdir}/bin/python3 ./manage.py collectstatic --noinput
 
 EXPOSE 6000
 ENTRYPOINT ${appdir}/bin/python ./manage.py migrate && \
            ${appdir}/bin/gunicorn \
                --env DJANGO_SETTINGS_MODULE=euth_wagtail.settings.aws \
-               --forwarded-allow-ips=* \
+               --forwarded-allow-ips=172.17.0.1 \
                --bind=0.0.0.0:6000 \
                --workers=2 \
                --name=euth_wagtail \

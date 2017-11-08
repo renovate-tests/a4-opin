@@ -19,3 +19,7 @@ venv
 /pyvenv.cfg
 /webpack-stats.json
 /euth_wagtail/settings/local.py
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
