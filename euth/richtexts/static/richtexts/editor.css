@@ -1,0 +1,16 @@
+.richtext {
+    height: 25vh;
+}
+
+.ql-a4image {
+    text-align: center;
+}
+
+.ql-a4image:before {
+    content: '📷';
+    font-size: 24px;
+}
+
+.a4image-blot {
+    max-width: 100%;
+}

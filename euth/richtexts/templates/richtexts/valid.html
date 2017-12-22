@@ -1,0 +1,34 @@
+{% load richtexts %}
+<head>
+    <style>
+        pre code {
+            background-color: #eee;
+            border: 1px solid #999;
+            display: block;
+            padding: 20px;
+        }
+
+        .image {
+            max-width: 100%;
+        }
+
+        .image-left {
+            float: left;
+            max-width: 50%;
+        }
+    </style>
+</head>
+
+
+<h1>Submitted</h1>
+<h2> Raw </h2>
+<pre>
+    <code>
+        {{ text | pprint }}
+    </code>
+</pre>
+</p>
+<h2> Rendered </h2>
+<p>
+{{ text | render_richtext }}
+</p>

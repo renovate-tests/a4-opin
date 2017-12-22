@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     'adhocracy4.filters.apps.FiltersConfig',
     'adhocracy4.rules.apps.RulesConfig',
 
+    'euth.richtexts.apps.RichtextsConfig',
     'euth.users.apps.UsersConfig',
     'euth.actions.apps.ActionsConfig',
     'euth.organisations.apps.OrganisationsConfig',

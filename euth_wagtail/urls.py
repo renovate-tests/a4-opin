@@ -28,6 +28,7 @@ from euth.offlinephases import urls as offlinephase_urls
 from euth.organisations import urls as organisations_urls
 from euth.projects import urls as project_urls
 from euth.projects.api import ProjectViewSet
+from euth.richtexts import urls as richtext_urls
 from euth.users import urls as user_urls
 from euth.users.api import UserViewSet
 
@@ -61,6 +62,7 @@ urlpatterns = [
         login_required(ck_views.upload), name='ckeditor_upload'),
     url(r'^browse/',
         never_cache(login_required(ck_views.browse)), name='ckeditor_browse'),
+    url(r'^richtexts/', include(richtext_urls)),
 ]
 
 urlpatterns += i18n_patterns(
