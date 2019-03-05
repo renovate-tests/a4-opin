@@ -72,7 +72,7 @@ module.exports = {
         exclude: /node_modules\/(?!adhocracy4)/, // exclude all dependencies but adhocracy4
         loader: 'babel-loader',
         query: {
-          presets: ['babel-preset-env', 'babel-preset-react'].map(require.resolve)
+          presets: ['@babel/preset-env', '@babel/preset-react'].map(require.resolve)
         }
       },
       {
