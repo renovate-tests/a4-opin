@@ -18,7 +18,6 @@
   "labels": [
     "renovate"
   ],
-
   "packageRules": [
       {
         "packagePatterns": ["^eslint"],
