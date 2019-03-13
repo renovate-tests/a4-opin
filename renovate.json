@@ -2,7 +2,7 @@
   "extends": [
     "config:base"
   ],
-
+  "includeForks": true,
   "automerge": true,
   "major": {
     "automerge": false
@@ -23,7 +23,5 @@
         "packagePatterns": ["^eslint"],
         "groupName": "eslint packages"
       }
-    ],
-
-  "schedule": ["on thursday"]
+    ]
 }
