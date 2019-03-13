@@ -14,7 +14,7 @@
   "digest": {
     "enabled": false
   },
-
+  "prHourlyLimit": 0,
   "labels": [
     "renovate"
   ],
